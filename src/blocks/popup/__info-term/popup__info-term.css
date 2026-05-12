@@ -1,0 +1,7 @@
+.popup__info-term {
+    background-color: rgb(0 0 0 / 20%);
+    border-radius: 2px;
+    padding: 1px;
+    font-weight: 500;
+    white-space: nowrap;
+}

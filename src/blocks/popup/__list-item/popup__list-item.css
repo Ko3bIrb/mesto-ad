@@ -1,0 +1,6 @@
+.popup__list-item {
+    max-width: 105px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

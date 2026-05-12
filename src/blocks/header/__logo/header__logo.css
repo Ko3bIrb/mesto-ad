@@ -1,0 +1,23 @@
+.header__logo {
+  width: 142px;
+  height: 33px;
+  object-fit: contain;
+  cursor: pointer;
+  -webkit-transition: opacity 0.3s;
+  -moz-transition: opacity 0.3s;
+  -ms-transition: opacity 0.3s;
+  -o-transition: opacity 0.3s;
+  transition: opacity 0.3s;
+}
+
+.header__logo:hover {
+  opacity: 0.6;
+}
+
+@media screen and (max-width: 480px) {
+  .header__logo {
+    width: 104px;
+    height: 24px;
+    margin: 0 0 0 7px;
+  }
+}

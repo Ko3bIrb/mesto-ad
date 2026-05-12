@@ -1,0 +1,7 @@
+.popup__info-description {
+    margin-left: 0;
+    max-width: 320px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

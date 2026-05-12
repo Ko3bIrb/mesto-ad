@@ -1,0 +1,9 @@
+.card__control {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  position: absolute;
+  top: 18px;
+  inset-inline: 15px;
+  width: calc(100% - 30px);
+}

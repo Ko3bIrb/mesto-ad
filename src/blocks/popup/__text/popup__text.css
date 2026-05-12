@@ -1,0 +1,11 @@
+.popup__text {
+  margin: 20px 0 0;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+@media screen and (max-width: 568px) {
+  .popup__text {
+    font-size: 12px;
+  }
+}
