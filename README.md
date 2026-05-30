@@ -1,1 +1,1 @@
-[Открыть проект mesto-ad](https://Ko3bIrb.github.io/mesto-pages/)
+[Открыть проект mesto-ad](https://ko3bIrb.github.io/mesto-ad/)
