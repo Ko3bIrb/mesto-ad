@@ -1,4 +1,4 @@
-import "./pages/index.css";
+import "../pages/index.css";
 
 import {
   getUserInfo,
@@ -8,11 +8,10 @@ import {
   addCard,
   deleteCard,
   changeLikeCardStatus,
-} from "./scripts/components/api.js";
-import { createCardElement } from "./scripts/components/card.js";
-import { openModal, closeModal, setupModalClosers } from "./scripts/components/modal.js";
-import { enableValidation, clearValidation, validationConfig } from "./scripts/components/validation.js";
-
+} from "./components/api.js";
+import { createCardElement } from "./components/card.js";
+import { openModal, closeModal, setupModalClosers } from "./components/modal.js";
+import { enableValidation, clearValidation, validationConfig } from "./components/validation.js";
 // ===== DOM ЭЛЕМЕНТЫ =====
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
