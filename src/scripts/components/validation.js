@@ -26,26 +26,94 @@ const hideInputError = (formElement, inputElement, config) => {
 };
 
 const checkInputValidity = (formElement, inputElement, config) => {
-  if (inputElement.validity.valid) {
-    hideInputError(formElement, inputElement, config);
-  } else {
-    let errorMessage = inputElement.validationMessage;
-    if (inputElement.type === "text" && (inputElement.id === "name" || inputElement.id === "place-name")) {
-      const value = inputElement.value;
+  // Сначала проверяем стандартную браузерную валидацию
+  let isInvalid = false;
+  let errorMessage = "";
+  
+  // Проверка на минимальную длину для названия карточки
+  if (inputElement.id === "place-name") {
+    const value = inputElement.value;
+    if (value.length < 2) {
+      isInvalid = true;
+      errorMessage = "Минимум 2 символа";
+    } else if (value.length > 30) {
+      isInvalid = true;
+      errorMessage = "Максимум 30 символов";
+    } else {
       const regex = /^[a-zA-Zа-яА-ЯёЁ\s\-]+$/;
       if (!regex.test(value) && value.length > 0) {
+        isInvalid = true;
         errorMessage = "Разрешены только латиница, кириллица, дефис и пробелы";
-      } else if (value.length < 2) {
-        errorMessage = "Минимум 2 символа";
-      } else if (value.length > (inputElement.id === "name" ? 40 : 30)) {
-        errorMessage = `Максимум ${inputElement.id === "name" ? 40 : 30} символов`;
       }
     }
+  }
+  
+  // Проверка на минимальную длину для имени пользователя
+  if (inputElement.id === "user-name") {
+    const value = inputElement.value;
+    if (value.length < 2) {
+      isInvalid = true;
+      errorMessage = "Минимум 2 символа";
+    } else if (value.length > 40) {
+      isInvalid = true;
+      errorMessage = "Максимум 40 символов";
+    } else {
+      const regex = /^[a-zA-Zа-яА-ЯёЁ\s\-]+$/;
+      if (!regex.test(value) && value.length > 0) {
+        isInvalid = true;
+        errorMessage = "Разрешены только латиница, кириллица, дефис и пробелы";
+      }
+    }
+  }
+  
+  // Проверка для поля ссылки
+  if (inputElement.id === "place-link" || inputElement.id === "user-avatar") {
+    if (!inputElement.validity.valid) {
+      isInvalid = true;
+      errorMessage = inputElement.validationMessage || "Введите корректный URL";
+    }
+  }
+  
+  // Проверка для описания
+  if (inputElement.id === "user-description") {
+    const value = inputElement.value;
+    if (value.length < 2) {
+      isInvalid = true;
+      errorMessage = "Минимум 2 символа";
+    } else if (value.length > 200) {
+      isInvalid = true;
+      errorMessage = "Максимум 200 символов";
+    }
+  }
+  
+  if (isInvalid) {
     showInputError(formElement, inputElement, errorMessage, config);
+  } else {
+    hideInputError(formElement, inputElement, config);
   }
 };
 
-const hasInvalidInput = (inputList) => inputList.some((input) => !input.validity.valid);
+const hasInvalidInput = (inputList) => {
+  return inputList.some((inputElement) => {
+    // Проверяем каждое поле на валидность
+    if (inputElement.id === "place-name") {
+      const value = inputElement.value;
+      return value.length < 2 || value.length > 30 || !/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(value);
+    }
+    if (inputElement.id === "user-name") {
+      const value = inputElement.value;
+      return value.length < 2 || value.length > 40 || !/^[a-zA-Zа-яА-ЯёЁ\s\-]+$/.test(value);
+    }
+    if (inputElement.id === "place-link" || inputElement.id === "user-avatar") {
+      return !inputElement.validity.valid;
+    }
+    if (inputElement.id === "user-description") {
+      const value = inputElement.value;
+      return value.length < 2 || value.length > 200;
+    }
+    return !inputElement.validity.valid;
+  });
+};
 
 const toggleButtonState = (inputList, buttonElement, config) => {
   if (hasInvalidInput(inputList)) {

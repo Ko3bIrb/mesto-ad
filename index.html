@@ -21,9 +21,7 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <div
-            class="profile__image"
-          ></div>
+          <div class="profile__image"></div>
           <div class="profile__info">
             <h1 class="profile__title"></h1>
             <button class="profile__edit-button" type="button"></button>
@@ -39,6 +37,7 @@
         <p class="footer__copyright">© 2025 Mesto Russia</p>
       </footer>
 
+      <!-- Модалка редактирования профиля -->
       <div class="popup popup_type_edit">
         <div class="popup__content">
           <button type="button" class="popup__close"></button>
@@ -52,6 +51,7 @@
                 class="popup__input popup__input_type_name"
                 placeholder="Имя"
               />
+              <span class="popup__error user-name-error"></span>
             </label>
             <label class="popup__label">
               <input
@@ -61,17 +61,14 @@
                 class="popup__input popup__input_type_description"
                 placeholder="Занятие"
               />
+              <span class="popup__error user-description-error"></span>
             </label>
-            <button
-              type="submit"
-              class="button popup__button"
-            >
-              Сохранить
-            </button>
+            <button type="submit" class="button popup__button">Сохранить</button>
           </form>
         </div>
       </div>
 
+      <!-- Модалка добавления карточки -->
       <div class="popup popup_type_new-card">
         <div class="popup__content">
           <button type="button" class="popup__close"></button>
@@ -84,7 +81,9 @@
                 id="place-name"
                 class="popup__input popup__input_type_card-name"
                 placeholder="Название"
+                required
               />
+              <span class="popup__error place-name-error"></span>
             </label>
             <label class="popup__label">
               <input
@@ -93,18 +92,16 @@
                 id="place-link"
                 class="popup__input popup__input_type_url"
                 placeholder="Ссылка на картинку"
+                required
               />
+              <span class="popup__error place-link-error"></span>
             </label>
-            <button
-              type="submit"
-              class="button popup__button"
-            >
-              Создать
-            </button>
+            <button type="submit" class="button popup__button">Создать</button>
           </form>
         </div>
       </div>
 
+      <!-- Модалка изображения -->
       <div class="popup popup_type_image">
         <div class="popup__content popup__content_content_image">
           <button type="button" class="popup__close"></button>
@@ -113,21 +110,18 @@
         </div>
       </div>
 
+      <!-- Модалка подтверждения удаления -->
       <div class="popup popup_type_remove-card">
         <div class="popup__content">
           <button type="button" class="popup__close"></button>
           <h3 class="popup__title">Вы уверены?</h3>
           <form class="popup__form" name="remove-card" novalidate>
-            <button
-              type="submit"
-              class="button popup__button"
-            >
-              Да
-            </button>
+            <button type="submit" class="button popup__button">Да</button>
           </form>
         </div>
       </div>
 
+      <!-- Модалка обновления аватара -->
       <div class="popup popup_type_edit-avatar">
         <div class="popup__content">
           <button type="button" class="popup__close"></button>
@@ -141,31 +135,27 @@
                 class="popup__input popup__input_type_avatar"
                 placeholder="Ссылка на изображение"
               />
+              <span class="popup__error user-avatar-error"></span>
             </label>
-            <button
-              type="submit"
-              class="button popup__button"
-            >
-              Сохранить
-            </button>
+            <button type="submit" class="button popup__button">Сохранить</button>
           </form>
         </div>
       </div>
 
+      <!-- Модалка статистики карточки -->
       <div class="popup popup_type_info">
         <div class="popup__content popup__content_content_info">
           <button type="button" class="popup__close"></button>
-          <h3 class="popup__title"></h3>
           <dl class="popup__info"></dl>
-
-         <h4 class="popup__text"></h4>
-         <ul class="popup__list"></ul>
-       </div>
-     </div>
+          <h4 class="popup__text">Лайкнули:</h4>
+          <ul class="popup__list popup__list_type_horizontal"></ul>
+        </div>
+      </div>
     </div>
 
     <script src="./src/scripts/index.js" defer type="module"></script>
 
+    <!-- Шаблон карточки -->
     <template id="card-template">
       <li class="places__item card">
         <img class="card__image" src="" alt="" />
@@ -183,15 +173,17 @@
       </li>
     </template>
 
-   <template id="popup-info-definition-template">
-     <div class="popup__info-item">
-       <dt class="popup__info-term"></dt>
-       <dd class="popup__info-description"></dd>
-     </div>
-   </template>
+    <!-- Шаблон строки информации -->
+    <template id="popup-info-definition-template">
+      <div class="popup__info-item">
+        <dt class="popup__info-term"></dt>
+        <dd class="popup__info-description"></dd>
+      </div>
+    </template>
 
-   <template id="popup-info-user-preview-template">
-     <li class="popup__list-item popup__list-item_type_badge"></li>
-   </template>
+    <!-- Шаблон пользователя в списке лайкнувших -->
+    <template id="popup-info-user-preview-template">
+      <li class="popup__list-item popup__list-item_type_badge"></li>
+    </template>
   </body>
 </html>

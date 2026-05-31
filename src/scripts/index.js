@@ -12,6 +12,7 @@ import {
 import { createCardElement } from "./components/card.js";
 import { openModal, closeModal, setupModalClosers } from "./components/modal.js";
 import { enableValidation, clearValidation, validationConfig } from "./components/validation.js";
+
 // ===== DOM ЭЛЕМЕНТЫ =====
 const profileTitle = document.querySelector(".profile__title");
 const profileDescription = document.querySelector(".profile__description");
@@ -47,8 +48,12 @@ const infoModalList = infoModal?.querySelector(".popup__info");
 const infoModalTemplate = document.querySelector("#popup-info-definition-template");
 const userInfoTemplate = document.querySelector("#popup-info-user-preview-template");
 
+const confirmDeleteModal = document.querySelector(".popup_type_remove-card");
+const confirmDeleteForm = confirmDeleteModal?.querySelector(".popup__form");
+
 // ===== ПЕРЕМЕННЫЕ =====
 let currentUserId = null;
+let cardToDelete = null;
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
 const renderLoading = (button, isLoading, defaultText, loadingText = "Сохранение...") => {
@@ -80,16 +85,37 @@ const handleLikeClick = async (cardId, likeButton, likeCount) => {
   }
 };
 
-const handleDeleteClick = async (cardId, cardElement) => {
-  if (!confirm("Вы уверены, что хотите удалить карточку?")) return;
+// Удаление через модальное окно (без confirm)
+const handleDeleteClick = (cardId, cardElement) => {
+  cardToDelete = { cardId, cardElement };
+  openModal(confirmDeleteModal);
+};
+
+const handleConfirmDelete = async (evt) => {
+  evt.preventDefault();
+  if (!cardToDelete) return;
+  
+  const submitButton = confirmDeleteForm?.querySelector(".popup__button");
+  const originalText = submitButton?.textContent || "Да";
+  
+  if (submitButton) submitButton.textContent = "Удаление...";
+  
   try {
-    await deleteCard(cardId);
-    cardElement.remove();
+    await deleteCard(cardToDelete.cardId);
+    // Удаляем карточку со страницы
+    if (cardToDelete.cardElement && cardToDelete.cardElement.remove) {
+      cardToDelete.cardElement.remove();
+    }
+    closeModal(confirmDeleteModal);
+    cardToDelete = null;
   } catch (err) {
     console.error("Ошибка при удалении:", err);
+  } finally {
+    if (submitButton) submitButton.textContent = originalText;
   }
 };
 
+// Статистика карточки
 const handleInfoClick = async (cardId) => {
   if (!infoModal || !infoModalList) return;
   try {
@@ -109,24 +135,24 @@ const handleInfoClick = async (cardId) => {
       return template;
     };
 
-    const createUserItem = (user) => {
-      const template = userInfoTemplate?.content.cloneNode(true);
-      if (!template) return null;
-      const nameElement = template.querySelector(".popup__list-item");
-      if (nameElement) nameElement.textContent = user.name;
-      return template;
-    };
-
-    infoModalList.appendChild(createInfoRow("Название:", cardData.name));
+    // Добавляем строки информации
+    infoModalList.appendChild(createInfoRow("Описание:", cardData.name));
     infoModalList.appendChild(createInfoRow("Дата создания:", formatDate(cardData.createdAt)));
-    infoModalList.appendChild(createInfoRow("Автор:", cardData.owner.name));
-    infoModalList.appendChild(createInfoRow("Лайков:", cardData.likes.length));
+    infoModalList.appendChild(createInfoRow("Владелец:", cardData.owner.name));
+    infoModalList.appendChild(createInfoRow("Количество лайков:", cardData.likes.length));
 
-    if (cardData.likes.length > 0) {
-      infoModalList.appendChild(createInfoRow("Кто лайкнул:", ""));
+    // Очищаем и заполняем список лайкнувших
+    const popupList = document.querySelector(".popup__list");
+    if (popupList) {
+      popupList.innerHTML = "";
+      
       cardData.likes.forEach(user => {
-        const userItem = createUserItem(user);
-        if (userItem) infoModalList.appendChild(userItem);
+        const template = userInfoTemplate?.content.cloneNode(true);
+        if (template) {
+          const nameElement = template.querySelector(".popup__list-item");
+          if (nameElement) nameElement.textContent = user.name;
+          popupList.appendChild(template);
+        }
       });
     }
 
@@ -198,6 +224,7 @@ const setupFormHandlers = () => {
   if (editProfileForm) editProfileForm.addEventListener("submit", handleProfileFormSubmit);
   if (editAvatarForm) editAvatarForm.addEventListener("submit", handleAvatarFormSubmit);
   if (addCardForm) addCardForm.addEventListener("submit", handleAddCardSubmit);
+  if (confirmDeleteForm) confirmDeleteForm.addEventListener("submit", handleConfirmDelete);
 
   if (profileEditButton) {
     profileEditButton.addEventListener("click", () => {

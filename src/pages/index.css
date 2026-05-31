@@ -11,3 +11,20 @@
 @import url('../blocks/popup/_is-animated/popup_is-animated.css');
 @import url('../blocks/popup/_is-opened/popup_is-opened.css');
 /*Импортируем на уровень выше*/
+
+.popup__list_type_horizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.popup__list-item_type_badge {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}

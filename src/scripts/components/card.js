@@ -1,6 +1,7 @@
 export function createCardElement(cardData, currentUserId, { handleImageClick, handleDeleteClick, handleLikeClick, handleInfoClick }) {
   const cardTemplate = document.querySelector("#card-template").content;
-  const cardElement = cardTemplate.cloneNode(true);
+  const cardFragment = cardTemplate.cloneNode(true);
+  const cardElement = cardFragment.querySelector(".card");
 
   const cardImage = cardElement.querySelector(".card__image");
   const cardTitle = cardElement.querySelector(".card__title");
