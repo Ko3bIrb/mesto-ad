@@ -7,11 +7,20 @@ import {
   setUserAvatar,
   addCard,
   deleteCard,
-  changeLikeCardStatus,
 } from "./components/api.js";
-import { createCardElement } from "./components/card.js";
+import { createCardElement, removeCardElement } from "./components/card.js";
 import { openModal, closeModal, setupModalClosers } from "./components/modal.js";
-import { enableValidation, clearValidation, validationConfig } from "./components/validation.js";
+import { enableValidation, clearValidation } from "./components/validation.js";
+
+// ===== НАСТРОЙКИ ВАЛИДАЦИИ =====
+const validationConfig = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
 
 // ===== DOM ЭЛЕМЕНТЫ =====
 const profileTitle = document.querySelector(".profile__title");
@@ -74,18 +83,7 @@ const handleImageClick = (name, link) => {
   if (imageModal) openModal(imageModal);
 };
 
-const handleLikeClick = async (cardId, likeButton, likeCount) => {
-  const isLiked = likeButton.classList.contains("card__like-button_is-active");
-  try {
-    const updatedCard = await changeLikeCardStatus(cardId, isLiked);
-    likeCount.textContent = updatedCard.likes.length;
-    likeButton.classList.toggle("card__like-button_is-active");
-  } catch (err) {
-    console.error("Ошибка при лайке:", err);
-  }
-};
-
-// Удаление через модальное окно (без confirm)
+// Удаление через модальное окно
 const handleDeleteClick = (cardId, cardElement) => {
   cardToDelete = { cardId, cardElement };
   openModal(confirmDeleteModal);
@@ -102,10 +100,8 @@ const handleConfirmDelete = async (evt) => {
   
   try {
     await deleteCard(cardToDelete.cardId);
-    // Удаляем карточку со страницы
-    if (cardToDelete.cardElement && cardToDelete.cardElement.remove) {
-      cardToDelete.cardElement.remove();
-    }
+    // Используем функцию из card.js для удаления разметки
+    removeCardElement(cardToDelete.cardElement);
     closeModal(confirmDeleteModal);
     cardToDelete = null;
   } catch (err) {
@@ -123,6 +119,12 @@ const handleInfoClick = async (cardId) => {
     const cardData = cards.find(card => card._id === cardId);
     if (!cardData) return;
 
+    const modalTitle = infoModal.querySelector(".popup__title");
+    if (modalTitle) modalTitle.textContent = "Информация о карточке";
+    
+    const popupText = infoModal.querySelector(".popup__text");
+    if (popupText) popupText.textContent = "Лайкнули:";
+
     infoModalList.innerHTML = "";
 
     const createInfoRow = (label, value) => {
@@ -135,14 +137,12 @@ const handleInfoClick = async (cardId) => {
       return template;
     };
 
-    // Добавляем строки информации
     infoModalList.appendChild(createInfoRow("Описание:", cardData.name));
     infoModalList.appendChild(createInfoRow("Дата создания:", formatDate(cardData.createdAt)));
     infoModalList.appendChild(createInfoRow("Владелец:", cardData.owner.name));
     infoModalList.appendChild(createInfoRow("Количество лайков:", cardData.likes.length));
 
-    // Очищаем и заполняем список лайкнувших
-    const popupList = document.querySelector(".popup__list");
+    const popupList = infoModal.querySelector(".popup__list");
     if (popupList) {
       popupList.innerHTML = "";
       
@@ -187,8 +187,6 @@ const handleAvatarFormSubmit = async (evt) => {
     const userData = await setUserAvatar(avatarInput.value);
     profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
     closeModal(editAvatarModal);
-    avatarInput.value = "";
-    clearValidation(editAvatarForm, validationConfig);
   } catch (err) {
     console.error("Ошибка обновления аватара:", err);
   } finally {
@@ -205,17 +203,22 @@ const handleAddCardSubmit = async (evt) => {
     const cardElement = createCardElement(newCard, currentUserId, {
       handleImageClick,
       handleDeleteClick,
-      handleLikeClick,
       handleInfoClick,
     });
     cardContainer.prepend(cardElement);
     closeModal(addCardModal);
-    addCardForm.reset();
-    clearValidation(addCardForm, validationConfig);
   } catch (err) {
     console.error("Ошибка добавления карточки:", err);
   } finally {
     renderLoading(addCardSubmitBtn, false, defaultText, "Создать");
+  }
+};
+
+// ===== ОЧИСТКА ФОРМ ПРИ ОТКРЫТИИ =====
+const clearForm = (formElement) => {
+  if (formElement) {
+    formElement.reset();
+    clearValidation(formElement, validationConfig);
   }
 };
 
@@ -237,16 +240,14 @@ const setupFormHandlers = () => {
 
   if (profileAvatar) {
     profileAvatar.addEventListener("click", () => {
-      avatarInput.value = "";
-      clearValidation(editAvatarForm, validationConfig);
+      clearForm(editAvatarForm);
       openModal(editAvatarModal);
     });
   }
 
   if (profileAddButton) {
     profileAddButton.addEventListener("click", () => {
-      addCardForm.reset();
-      clearValidation(addCardForm, validationConfig);
+      clearForm(addCardForm);
       openModal(addCardModal);
     });
   }
@@ -266,7 +267,6 @@ const initializeApp = async () => {
       const cardElement = createCardElement(card, currentUserId, {
         handleImageClick,
         handleDeleteClick,
-        handleLikeClick,
         handleInfoClick,
       });
       cardContainer.appendChild(cardElement);
@@ -275,6 +275,86 @@ const initializeApp = async () => {
     console.error("Ошибка загрузки данных:", err);
   }
 };
+
+// ===== СТАТИСТИКА ПОЛЬЗОВАТЕЛЕЙ (КЛИК ПО ЛОГОТИПУ) =====
+const logo = document.querySelector(".header__logo");
+const usersStatsModal = document.querySelector(".popup_type_info");
+const usersStatsModalInfoList = usersStatsModal?.querySelector(".popup__info");
+const usersStatsModalUserList = usersStatsModal?.querySelector(".popup__list");
+
+const createInfoString = (label, value) => {
+  const template = document.querySelector("#popup-info-definition-template").content.cloneNode(true);
+  const term = template.querySelector(".popup__info-term");
+  const definition = template.querySelector(".popup__info-description");
+  if (term) term.textContent = label;
+  if (definition) definition.textContent = value;
+  return template;
+};
+
+const createUserItem = (userName) => {
+  const template = document.querySelector("#popup-info-user-preview-template").content.cloneNode(true);
+  const item = template.querySelector(".popup__list-item");
+  if (item) item.textContent = userName;
+  return template;
+};
+
+const handleLogoClick = () => {
+  if (!usersStatsModal || !usersStatsModalInfoList || !usersStatsModalUserList) return;
+  
+  getCardList()
+    .then((cards) => {
+      const modalTitle = usersStatsModal.querySelector(".popup__title");
+      if (modalTitle) modalTitle.textContent = "Статистика пользователей";
+      
+      const popupText = usersStatsModal.querySelector(".popup__text");
+      if (popupText) popupText.textContent = "Все пользователи:";
+      
+      usersStatsModalInfoList.innerHTML = "";
+      usersStatsModalUserList.innerHTML = "";
+      
+      const totalCards = cards.length;
+      
+      const dates = cards.map(card => new Date(card.createdAt)).sort((a, b) => a - b);
+      const firstDate = dates[0];
+      const lastDate = dates[dates.length - 1];
+      
+      const usersMap = new Map();
+      cards.forEach(card => {
+        const userId = card.owner._id;
+        if (usersMap.has(userId)) {
+          usersMap.get(userId).count++;
+        } else {
+          usersMap.set(userId, { name: card.owner.name, count: 1 });
+        }
+      });
+      const totalUsers = usersMap.size;
+      
+      let maxCards = 0;
+      usersMap.forEach(user => {
+        if (user.count > maxCards) maxCards = user.count;
+      });
+      
+      usersStatsModalInfoList.appendChild(createInfoString("Всего карточек:", totalCards));
+      usersStatsModalInfoList.appendChild(createInfoString("Первая создана:", formatDate(firstDate)));
+      usersStatsModalInfoList.appendChild(createInfoString("Последняя создана:", formatDate(lastDate)));
+      usersStatsModalInfoList.appendChild(createInfoString("Всего пользователей:", totalUsers));
+      usersStatsModalInfoList.appendChild(createInfoString("Максимум карточек от одного:", maxCards));
+      
+      const sortedUsers = Array.from(usersMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      sortedUsers.forEach(user => {
+        usersStatsModalUserList.appendChild(createUserItem(user.name));
+      });
+      
+      openModal(usersStatsModal);
+    })
+    .catch((err) => {
+      console.error("Ошибка загрузки статистики:", err);
+    });
+};
+
+if (logo) {
+  logo.addEventListener("click", handleLogoClick);
+}
 
 // ===== ЗАПУСК =====
 enableValidation(validationConfig);

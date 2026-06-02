@@ -50,6 +50,10 @@
                 id="user-name"
                 class="popup__input popup__input_type_name"
                 placeholder="Имя"
+                required
+                minlength="2"
+                maxlength="40"
+                pattern="^[a-zA-Zа-яА-ЯёЁ\s\-]+$"
               />
               <span class="popup__error user-name-error"></span>
             </label>
@@ -60,6 +64,9 @@
                 id="user-description"
                 class="popup__input popup__input_type_description"
                 placeholder="Занятие"
+                required
+                minlength="2"
+                maxlength="200"
               />
               <span class="popup__error user-description-error"></span>
             </label>
@@ -82,6 +89,9 @@
                 class="popup__input popup__input_type_card-name"
                 placeholder="Название"
                 required
+                minlength="2"
+                maxlength="30"
+                pattern="^[a-zA-Zа-яА-ЯёЁ\s\-]+$"
               />
               <span class="popup__error place-name-error"></span>
             </label>
@@ -134,6 +144,7 @@
                 id="user-avatar"
                 class="popup__input popup__input_type_avatar"
                 placeholder="Ссылка на изображение"
+                required
               />
               <span class="popup__error user-avatar-error"></span>
             </label>
@@ -146,6 +157,7 @@
       <div class="popup popup_type_info">
         <div class="popup__content popup__content_content_info">
           <button type="button" class="popup__close"></button>
+          <h3 class="popup__title">Информация о карточке</h3>
           <dl class="popup__info"></dl>
           <h4 class="popup__text">Лайкнули:</h4>
           <ul class="popup__list popup__list_type_horizontal"></ul>

@@ -1,4 +1,22 @@
-export function createCardElement(cardData, currentUserId, { handleImageClick, handleDeleteClick, handleLikeClick, handleInfoClick }) {
+import { changeLikeCardStatus } from "./api.js";
+
+// Проверяет, лайкнута ли карточка текущим пользователем
+export const isCardLiked = (cardData, currentUserId) => {
+  return cardData.likes.some(user => user._id === currentUserId);
+};
+
+// Обновляет состояние лайка и счётчик на карточке
+export const updateLikeState = (likeButton, likeCount, updatedCard) => {
+  likeCount.textContent = updatedCard.likes.length;
+  likeButton.classList.toggle("card__like-button_is-active");
+};
+
+// Удаляет карточку из DOM
+export const removeCardElement = (cardElement) => {
+  cardElement.remove();
+};
+
+export function createCardElement(cardData, currentUserId, { handleImageClick, handleDeleteClick, handleInfoClick }) {
   const cardTemplate = document.querySelector("#card-template").content;
   const cardFragment = cardTemplate.cloneNode(true);
   const cardElement = cardFragment.querySelector(".card");
@@ -15,21 +33,36 @@ export function createCardElement(cardData, currentUserId, { handleImageClick, h
   cardTitle.textContent = cardData.name;
   likeCount.textContent = cardData.likes.length;
 
-  const isLikedByMe = cardData.likes.some(user => user._id === currentUserId);
-  if (isLikedByMe) likeButton.classList.add("card__like-button_is-active");
+  // Устанавливаем состояние лайка
+  if (isCardLiked(cardData, currentUserId)) {
+    likeButton.classList.add("card__like-button_is-active");
+  }
 
+  // Обработчик лайка (вся логика внутри card.js)
+  likeButton.addEventListener("click", async () => {
+    const isLiked = likeButton.classList.contains("card__like-button_is-active");
+    try {
+      const updatedCard = await changeLikeCardStatus(cardData._id, isLiked);
+      updateLikeState(likeButton, likeCount, updatedCard);
+      cardData.likes = updatedCard.likes;
+    } catch (err) {
+      console.error("Ошибка при лайке:", err);
+    }
+  });
+
+  // Кнопка удаления (только для своих карточек)
   if (cardData.owner._id !== currentUserId) {
     if (deleteButton) deleteButton.remove();
   } else if (deleteButton) {
     deleteButton.addEventListener("click", () => handleDeleteClick(cardData._id, cardElement));
   }
 
-  likeButton.addEventListener("click", () => handleLikeClick(cardData._id, likeButton, likeCount));
-
+  // Кнопка информации
   if (infoButton) {
     infoButton.addEventListener("click", () => handleInfoClick(cardData._id));
   }
 
+  // Открытие изображения
   cardImage.addEventListener("click", () => handleImageClick(cardData.name, cardData.link));
 
   return cardElement;
