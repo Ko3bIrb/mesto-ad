@@ -17,10 +17,18 @@ const hideInputError = (formElement, inputElement, config) => {
 };
 
 const checkInputValidity = (formElement, inputElement, config) => {
+  let customErrorMessage = "";
+  if (inputElement.dataset.errorMessage) {
+    customErrorMessage = inputElement.dataset.errorMessage;
+  }
+  
   if (inputElement.validity.valid) {
     hideInputError(formElement, inputElement, config);
   } else {
-    const errorMessage = inputElement.validationMessage;
+    let errorMessage = inputElement.validationMessage;
+    if (customErrorMessage && inputElement.validity.patternMismatch) {
+      errorMessage = customErrorMessage;
+    }
     showInputError(formElement, inputElement, errorMessage, config);
   }
 };
